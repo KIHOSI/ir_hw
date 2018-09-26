@@ -2,10 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from nltk.stem import PorterStemmer
-# stopwords要先下載才能用 
-# import nltk
-# nltk.download('stopwords')
-from nltk.corpus import stopwords
 
 url = "https://ceiba.ntu.edu.tw/course/35d27d/content/28.txt" # 目標網址
 resp = requests.get(url)
@@ -24,14 +20,10 @@ stemmer = PorterStemmer()
 stemString = [stemmer.stem(lowerstring) for lowerstring in lowerString]
 
 # stopword removal
-#removeStopword = [word for word in stemString if word not in stopwords.words('english')]
-#print(removeStopword)
-
-# stopword removal2
-url2 = "http://ir.dcs.gla.ac.uk/resources/linguistic_utils/stop_words" # 目標網址
+url2 = "http://ir.dcs.gla.ac.uk/resources/linguistic_utils/stop_words" 
 resp2 = requests.get(url2)
-soup = BeautifulSoup(resp2.text,'html.parser') #抓html
-stopwordList = soup.text
+soup = BeautifulSoup(resp2.text,'html.parser') 
+stopwordList = soup.text # 抓取stopword list
 removeStopword = [word for word in stemString if word not in stopwordList]
 print(removeStopword)
 
