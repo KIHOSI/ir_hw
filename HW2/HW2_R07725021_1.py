@@ -10,7 +10,7 @@ from nltk.stem import PorterStemmer
 dict = {}
 
 # 讀取document collection
-for i in range(1,4):
+for i in range(1,1096):
     file = open("IRTM/"+str(i)+".txt","r")
     # file to string array
     data = file.read()
