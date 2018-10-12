@@ -28,10 +28,6 @@ for i in range(1,1096):
     stemString = [stemmer.stem(lowerstring) for lowerstring in lowerString]
     
     #stopword removal
-    #url = "http://ir.dcs.gla.ac.uk/resources/linguistic_utils/stop_words" 
-    #resp = requests.get(url)
-    #soup = BeautifulSoup(resp.text,'html.parser') 
-    #stopwordList = soup.text # 抓取stopword list
     #因為會有回應時間過長問題，直接抓下來讀取檔案
     file2 = open("stopwordlist.txt","r")
     stopwordList = file2.read()
@@ -44,7 +40,6 @@ for i in range(1,1096):
             dict[word] += 1
         else: #否則在dictionary加上該key，並從value=1開始
             dict[word] = 1   
-    #print(dict)
 
 # 將terms次數印到txt檔上，格式為t_index、term、df，並且是排序過(由小到大)
 with open('filtered_file.txt','w') as f:
