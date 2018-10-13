@@ -10,7 +10,7 @@ from nltk.stem import PorterStemmer
 dict_all = {}
 
 # 讀取document collection
-for i in range(1,4):
+for i in range(1,1096):
     file = open("IRTM/"+str(i)+".txt","r")
     # file to string array
     data = file.read()
@@ -41,8 +41,6 @@ for i in range(1,4):
             dict_now[word] += 1
         else: #否則在dictionary加上該key，並從value=1開始
             dict_now[word] = 1 
-    #print("dict_now: ")
-    #print(dict_now)
 
     #用dict_now儲存全部，dict_now儲存每一個doc的
     #判斷dict_now是否已經存有該term
@@ -51,12 +49,8 @@ for i in range(1,4):
             dict_all[key] += 1
         else:
             dict_all[key] = 1           
-    #print("dict_all: ")
-    
-    #for key,value in sorted(dict_all.items()):
-    #    print(key,value)
 
-# 將terms次數印到txt檔上，格式為t_index、term、df，並且是排序過(由小到大)
+# 將terms次數印到txt檔上，格式為t_index、term、df，並且是排序過(依據字母由小到大)
 with open('filtered_file.txt','w') as f:
     t_index = 1
     for key,value in sorted(dict_all.items()):
