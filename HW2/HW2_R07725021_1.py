@@ -8,6 +8,7 @@ from nltk.stem import PorterStemmer
 
 #initialnize
 dict_all = {}
+#removeStopword = {}
 
 # 讀取document collection
 for i in range(1,1096):
@@ -42,6 +43,11 @@ for i in range(1,1096):
         else: #否則在dictionary加上該key，並從value=1開始
             dict_now[word] = 1 
 
+    #將每一個doc的term的tf先輸出成txt(ex. 1.txt...)
+    with open('TermFrequency/'+str(i)+'.txt','w+') as f: #w+，沒有存在該檔案，則create(但Folder一定要存在)
+        for key,value in sorted(dict_now.items()):
+            f.write("%s %d\n" % (key,value))        
+
     #用dict_now儲存全部，dict_now儲存每一個doc的
     #判斷dict_now是否已經存有該term
     for key,value in dict_now.items():
@@ -51,7 +57,7 @@ for i in range(1,1096):
             dict_all[key] = 1           
 
 # 將terms次數印到txt檔上，格式為t_index、term、df，並且是排序過(依據字母由小到大)
-with open('filtered_file.txt','w') as f:
+with open('dictionary.txt','w') as f:
     t_index = 1
     for key,value in sorted(dict_all.items()):
         f.write("%d %s %d\n" % (t_index,key,value))
