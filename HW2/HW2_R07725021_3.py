@@ -14,12 +14,7 @@ def cosineSimilarity(dict1,dict2):
         if key_1 in dict2:
             value_1 = dict1[key_1] #dict1的value(tf-idf)
             value_2 = dict2[key_1] #dict2的value(tf-idf)
-            # print("dict1 key_1:"+str(key_1)+"\n")
-            # print("dict1 value:"+str(value_1)+"\n")
-            # print("dict2 value:"+str(value_2)+"\n")
             count += float(value_1*value_2) #兩者相乘，加起來
-            # print("count:"+str(count)+"\n")
-
     return count #回傳結果        
 
 

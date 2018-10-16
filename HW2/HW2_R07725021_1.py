@@ -48,13 +48,6 @@ for i in range(1,1096):
         for key,value in sorted(dict_now.items()):
             f.write("%s %d\n" % (key,value))        
 
-    #儲存所有的tf
-    #for key,value in dict_now.items():
-    #    if(dict_tf.get(key)):
-    #        dict_tf[key] += value
-    #    else:
-    #        dict_tf[key] = value    
-
     #用dict_now儲存全部，dict_now儲存每一個doc的
     #判斷dict_now是否已經存有該term
     for key,value in dict_now.items():
@@ -62,9 +55,6 @@ for i in range(1,1096):
             dict_all[key] += 1
         else:
             dict_all[key] = 1           
-#print("dict_tf:\n")
-#print(dict_tf)
-
 
 # 將terms次數印到txt檔上，格式為t_index、term、df，並且是排序過(依據字母由小到大)
 with open('dictionary.txt','w') as f:
