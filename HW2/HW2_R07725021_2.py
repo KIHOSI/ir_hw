@@ -36,7 +36,7 @@ for i in range(1,1096):
             (key,value) = line.split()
             dict_now[key] = value
 
-    #去dictonary.txt找到該term的df和其t_index，將df變idf
+    # 先清除i.doc檔案，寫上該doc含有多少term
     open('TF_IDF/'+str(i)+'.txt','w').close() # clear doc contents
     with open('TF_IDF/'+str(i)+'.txt','w') as f:
         f.write(str(len(dict_now))+"\n\n") # how many terms in this doc
