@@ -1,6 +1,4 @@
 import math
-import numpy as np
-import pandas as pd
 
 def findIDF(dict,key,value): #去dictonary.txt找到該term的df和其t_index，將df變idf    
     #在dictionary.txt找到該term的df，將df變idf

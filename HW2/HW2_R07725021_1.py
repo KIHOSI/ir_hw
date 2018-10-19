@@ -8,7 +8,6 @@ from nltk.stem import PorterStemmer
 
 #initialnize
 dict_all = {}
-dict_tf = {}
 
 # 讀取document collection
 for i in range(1,1096):
