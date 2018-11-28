@@ -32,8 +32,15 @@ for i in range(1,2): #將1095個doc做token
     #print(dict_doc)
 
 #讀取training.txt，得到各class及對應的training docid
+dict_class = {}
 with open('training.txt','r') as f:
     for line in f:
-        
+        print(line.split(' ',1))
+        (classID,docID_list) = line.split(' ',1)
+        docID_set = docID_list.split() #去除docid中最後面\n    
+        dict_class[classID] = docID_set
+    #print("dict_class\n")
+    #print(dict_class)    
 
+#
 
