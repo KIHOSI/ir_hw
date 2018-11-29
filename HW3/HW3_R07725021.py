@@ -2,7 +2,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 
 def tokenize(docid): #token
-    file = open("IRTM/"+str(docid)+".txt","r")
+    file = open("IRTM/"+docid+".txt","r")
     data = file.read()
     file.close()
 
@@ -25,9 +25,12 @@ def tokenize(docid): #token
 
     return removeStopword #回傳tokenize後該文章的token（字串）
 
+# def featureSelection():
+
+
 dict_doc = {} #儲存tokenize後的1095文章的token
 for i in range(1,2): #將1095個doc做token
-    dict_doc[i] = tokenize(i) #key為docid,value為該doc的所有token
+    dict_doc[i] = tokenize(str(i)) #key為docid,value為該doc的所有token (docid轉成string)
     #print("dict_doc key:"+str(i)+"\n")
     #print(dict_doc)
 
@@ -35,12 +38,29 @@ for i in range(1,2): #將1095個doc做token
 dict_class = {}
 with open('training.txt','r') as f:
     for line in f:
-        print(line.split(' ',1))
+        #print(line.split(' ',1))
         (classID,docID_list) = line.split(' ',1)
         docID_set = docID_list.split() #去除docid中最後面\n    
         dict_class[classID] = docID_set
-    #print("dict_class\n")
-    #print(dict_class)    
+# print(dict_class) 
+#print("\n")
+#token training document
+dict_train_doc = {} #key為docid,value為tokens
+for key,value in dict_class.items(): # key為classid,value為docid_list
+    for docid in value:
+        tokens = tokenize(docid)
+        dict_train_doc[docid] = tokens
 
-#
+# print(dict_train_doc.keys())
+#把dict_train_doc當成dict_class的value
+dict_class_doc={}
+for classid,docid_list in dict_class.items():
+     for docid in docid_list:
+        dict_test = {} #儲存dict_train_doc的docid和tokens
+        dict_test[docid] = dict_train_doc[docid]
+        dict_class_doc.setdefault(classid,[]) #預設是(key,[])，後面就可用append
+        dict_class_doc[classid].append((dict_test)) #key為classid，value為docid和tokens
+        
+# print(dict_class_doc[str(1)])
+#feature selection
 
