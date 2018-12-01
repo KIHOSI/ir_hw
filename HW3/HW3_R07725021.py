@@ -84,27 +84,38 @@ def chiSquare(term,dict_class,dict_train_doc): #計算每個term在13個class各
     return chi_square_sum 
 
 dict_doc = {} #儲存tokenize後的1095文章的term
-for i in range(1,2): #將1095個doc做tokenize
-    dict_doc[i] = tokenize(str(i)) #key為docid,value為該doc的所有term (docid轉成string)
+for i in range(1,1096): #將1095個doc做tokenize
+    dict_doc[str(i)] = tokenize(str(i)) #key為docid,value為該doc的所有term (i和docid轉成string)
     #print("dict_doc key:"+str(i)+"\n")
     #print(dict_doc)
 
 #讀取training.txt，得到各class及對應的training docid
-dict_class = {}
+dict_class = {} # key為classid,value為docid_list
 with open('training.txt','r') as f:
     for line in f:
         #print(line.split(' ',1))
         (classID,docID_list) = line.split(' ',1)
         docID_set = docID_list.split() #去除docid中最後面\n    
         dict_class[classID] = docID_set
-# print(dict_class) 
-#print("\n")
+
 #tokenize training document
 dict_train_doc = {} #key為docid,value為terms
 for key,value in dict_class.items(): # key為classid,value為docid_list
     for docid in value:
         tokens = tokenize(docid)
         dict_train_doc[docid] = tokens
+
+#去除train doc，剩下1095-195=900個test doc
+# print(len(dict_doc))
+dict_test_doc = dict_doc.copy() #複製1095個doc
+# print(len(dict_test_doc))
+for classid,docid_list in dict_class.items():
+    for docid in docid_list:
+        del dict_test_doc[docid] #刪除在train data的doc，留下來都當test data
+        # for docid,terms in dict_doc.items():
+        #     if not(docid == docid2):
+        #         dict_test_doc[docid] = terms
+print(len(dict_test_doc.keys()))
 
 #feature selection
 #計算每個train doc的term的chi-square
@@ -123,12 +134,26 @@ for terms_list in dict_train_doc.values(): #key為docid,value為terms，取得�
 feature_selection_list = []
 count = 1
 for key,value in sorted(dict_chisquare.items(), key = lambda x:x[1],reverse=True): #sorted by value(由大到小)
-    print("%s %s\n" % (key,value))
+    # print("%s %s\n" % (key,value))
     if(count > 500):
         break
     feature_selection_list.append(key)
-    count += 1
-    
+    count += 1    
 
 # print(len(feature_selection_list))
 # print(feature_selection_list)
+
+#過濾train data和test data，只剩這500個term
+dict_train_doc_filter = {}
+dict_test_doc_filter = {}
+for docid,terms in dict_train_doc.items(): #將train data過濾 
+    filter_terms = [term for term in terms if term in feature_selection_list]  #只留下在feature selection後這500個term的字
+    dict_train_doc_filter[docid] = filter_terms
+
+for docid,terms in dict_test_doc.items(): #將test data過濾
+    filter_terms = [term for term in terms if term in feature_selection_list]  #只留下在feature selection後這500個term的字
+    dict_test_doc_filter[docid] = filter_terms
+
+# print(dict_test_doc_filter)
+
+
