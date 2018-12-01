@@ -2,6 +2,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 # import numpy as np
 from collections import defaultdict
+import math
 
 def tokenize(docid): #term
     file = open("IRTM/"+docid+".txt","r")
@@ -91,8 +92,11 @@ def trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list):
     Nc = 15 # 每個class有15個train doc
     N = 195 # 13個class，有13*15 = 195個train doc
     prior_c = [] #儲存每個class的P(c)
+    prior_c.insert(0,0) #index從1開始
+    condprob =  defaultdict(dict) #two dimensional dict
+
     for classid,docid_list in dict_class.items():
-        prior_c.append(Nc/N) #P(c) = Nc / N
+        prior_c.insert(int(classid),(Nc/N)) #P(c) = Nc / N
         text_c = 0 #該class所有terms數(textc)
         text_term = 0 #每個term在該class的doc中總共出現幾次(Tct)
         for docid in docid_list: #取得每個class的docid list，得每一個doc
@@ -104,14 +108,31 @@ def trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list):
         #建condprob[t][c]
         # condprob = [][]
         # condprob = np.zeros((len(feature_selection_list),len(dict_class.keys())))
-        condprob =  defaultdict(dict)
+        
         for term in feature_selection_list:
             condprob[term][classid] = (text_term+1)/(text_c+len(feature_selection_list)) # add one smoothing，M為feature selection的總terms數(500)
-            # condprob.setdefault(term,{})[classid] = (text_term+1)/(text_c+len(feature_selection_list)) # add one smoothing，M為feature selection的總terms數(500)
-            
+            # print(condprob['distress'])
+            # condprob.setdefault(term,{})[classid] = (text_term+1)/(text_c+len(feature_selection_list)) # add one smoothing，M為feature selection的總terms數(500)  
 
     # print(feature_selection_list)  
-    # print(condprob)  
+    # print(condprob)
+    # print(prior_c)  
+    # print(condprob['distress'])
+
+    return condprob,prior_c
+
+def ApplyMultinomialNB(dict_class,test_data,condprob,prior_c): # multinomial model in testing phase
+    #判斷該test doc屬於哪一個class
+    score = [] #儲存term在每一個class的score,score = logP(c) + logP(X = t | c)
+    score.insert(0,0) #index從1開始
+    for classid,docid_list in dict_class.items():
+        score.insert(int(classid),math.log(prior_c[int(classid)]))
+        for term in test_data: #該test doc的term，在這個class的分數加總，就是這個doc屬於這個class的分數
+            # print("term:"+term+"\n")
+            score[int(classid)] += math.log(condprob[term][classid])
+    print(score) 
+
+
 
 
 dict_doc = {} #儲存tokenize後的1095文章的term
@@ -146,7 +167,7 @@ for classid,docid_list in dict_class.items():
         # for docid,terms in dict_doc.items():
         #     if not(docid == docid2):
         #         dict_test_doc[docid] = terms
-print(len(dict_test_doc.keys()))
+# print(len(dict_test_doc.keys()))
 
 #feature selection
 #計算每個train doc的term的chi-square
@@ -188,5 +209,12 @@ for docid,terms in dict_test_doc.items(): #將test data過濾
 # print(dict_test_doc_filter)
 
 #分類
-trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list)
+condprob,prior_c = trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list) #train data
+#test data，算出每一個doc屬於哪一個class
+dict_answer = {}
+ApplyMultinomialNB(dict_class,["distress","lesli"],condprob,prior_c)
+# for docid,terms in sorted(dict_test_doc_filter.items()):
+#     doc_class = ApplyMultinomialNB(dict_class,terms,condprob,prior_c) #得到該doc屬於哪個class
+#     dict_answer[int(docid)] = int(doc_class)
+
 
