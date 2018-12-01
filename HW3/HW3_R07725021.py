@@ -74,13 +74,14 @@ def chiSquare(term,dict_class,dict_train_doc): #計算每個term在13個class各
         notc_a.append(notc_all - notc_p[i])
     a_all += doc_all - p_all
 
-    #這個算法為計算該term在全部class的4個chi square值，加總！（不確定對不對ＱＱ）
+    #這個算法為計算該term在全部class的4個chi square值，加總！（就算個別算，值也一樣）
+    #因為四個值會加總，最終p_all,c_all,a_all,notc_all都一樣
     list_p = [p_all,a_all]
     list_c = [c_all,notc_all]
     chi_square_sum = countChiSquare(list_p,list_c,doc_all)   
+    # print(chi_square_sum)
 
-
-    return c_p  
+    return chi_square_sum 
 
 dict_doc = {} #儲存tokenize後的1095文章的term
 for i in range(1,2): #將1095個doc做tokenize
@@ -108,9 +109,26 @@ for key,value in dict_class.items(): # key為classid,value為docid_list
 #feature selection
 #計算每個train doc的term的chi-square
 dict_chisquare = {} #key為term,value為chisquare值
-print(chiSquare("navi",dict_class,dict_train_doc))
+# print(chiSquare("navi",dict_class,dict_train_doc))
 # print(dict_train_doc[str(11)])
-# for term in dict_train_doc[str(11)]: #key為docid,value為terms，取得每一個term
-#     chisquare = chiSquare(term,dict_class,dict_train_doc)
-#     dict_chisquare[term] = chisquare
-# print(dict_chisquare)
+for terms_list in dict_train_doc.values(): #key為docid,value為terms，取得每一個term
+    for term in terms_list:
+        # print(term)
+        chisquare = chiSquare(term,dict_class,dict_train_doc)
+        if(dict_chisquare.get(term)): #有重複的term,跳過
+            continue
+        dict_chisquare[term] = chisquare
+
+#取前500個chi-square大的term
+feature_selection_list = []
+count = 1
+for key,value in sorted(dict_chisquare.items(), key = lambda x:x[1],reverse=True): #sorted by value(由大到小)
+    print("%s %s\n" % (key,value))
+    if(count > 500):
+        break
+    feature_selection_list.append(key)
+    count += 1
+    
+
+# print(len(feature_selection_list))
+# print(feature_selection_list)
