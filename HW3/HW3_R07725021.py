@@ -3,6 +3,7 @@ from nltk.stem import PorterStemmer
 # import numpy as np
 from collections import defaultdict
 import math
+import csv
 
 def tokenize(docid): #term
     file = open("IRTM/"+docid+".txt","r")
@@ -130,8 +131,10 @@ def ApplyMultinomialNB(dict_class,test_data,condprob,prior_c): # multinomial mod
         for term in test_data: #該test doc的term，在這個class的分數加總，就是這個doc屬於這個class的分數
             # print("term:"+term+"\n")
             score[int(classid)] += math.log(condprob[term][classid])
-    print(score) 
-
+    del score[0] #刪除為0的（index恢復到從0開始）
+    # print(score)
+    # print(score.index(max(score))+1) 
+    return score.index(max(score))+1 #最大的值，代表這個class (index為0開始，所以要加一)
 
 
 
@@ -212,9 +215,24 @@ for docid,terms in dict_test_doc.items(): #將test data過濾
 condprob,prior_c = trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list) #train data
 #test data，算出每一個doc屬於哪一個class
 dict_answer = {}
-ApplyMultinomialNB(dict_class,["distress","lesli"],condprob,prior_c)
-# for docid,terms in sorted(dict_test_doc_filter.items()):
-#     doc_class = ApplyMultinomialNB(dict_class,terms,condprob,prior_c) #得到該doc屬於哪個class
-#     dict_answer[int(docid)] = int(doc_class)
+# dict_answer[1] = ApplyMultinomialNB(dict_class,["distress","lesli"],condprob,prior_c)
+for docid,terms in sorted(dict_test_doc_filter.items()):
+    doc_class = ApplyMultinomialNB(dict_class,terms,condprob,prior_c) #得到該doc屬於哪個class
+    dict_answer[int(docid)] = int(doc_class)
+# print(dict_answer)
+
+#將答案寫入成csv檔案
+with open('answer.csv','w',newline='') as csvfile:
+    #建立csv檔寫入器
+    writer = csv.writer(csvfile)
+
+    #第一行：id,Value
+    writer.writerow(['id','Value'])
+    #第二行開始輸入答案，格式為docid,classid
+    for docid,classid in sorted(dict_answer.items()):
+        writer.writerow([docid,classid])
+
+
+
 
 
