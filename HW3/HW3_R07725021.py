@@ -1,5 +1,7 @@
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
+# import numpy as np
+from collections import defaultdict
 
 def tokenize(docid): #term
     file = open("IRTM/"+docid+".txt","r")
@@ -83,6 +85,35 @@ def chiSquare(term,dict_class,dict_train_doc): #計算每個term在13個class各
 
     return chi_square_sum 
 
+def trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list): #Multinomail model for training phase
+    # test[1][1] = 1
+
+    Nc = 15 # 每個class有15個train doc
+    N = 195 # 13個class，有13*15 = 195個train doc
+    prior_c = [] #儲存每個class的P(c)
+    for classid,docid_list in dict_class.items():
+        prior_c.append(Nc/N) #P(c) = Nc / N
+        text_c = 0 #該class所有terms數(textc)
+        text_term = 0 #每個term在該class的doc中總共出現幾次(Tct)
+        for docid in docid_list: #取得每個class的docid list，得每一個doc
+            text_c += len(dict_train_doc_filter[docid]) #計算這個class總terms數
+            #計算每個term in V(feature selection的500個terms)在這個class中所有doc裡出現幾次
+            for term in feature_selection_list:
+                dict_train_doc_filter[docid].count(term)
+        
+        #建condprob[t][c]
+        # condprob = [][]
+        # condprob = np.zeros((len(feature_selection_list),len(dict_class.keys())))
+        condprob =  defaultdict(dict)
+        for term in feature_selection_list:
+            condprob[term][classid] = (text_term+1)/(text_c+len(feature_selection_list)) # add one smoothing，M為feature selection的總terms數(500)
+            # condprob.setdefault(term,{})[classid] = (text_term+1)/(text_c+len(feature_selection_list)) # add one smoothing，M為feature selection的總terms數(500)
+            
+
+    # print(feature_selection_list)  
+    # print(condprob)  
+
+
 dict_doc = {} #儲存tokenize後的1095文章的term
 for i in range(1,1096): #將1095個doc做tokenize
     dict_doc[str(i)] = tokenize(str(i)) #key為docid,value為該doc的所有term (i和docid轉成string)
@@ -144,8 +175,8 @@ for key,value in sorted(dict_chisquare.items(), key = lambda x:x[1],reverse=True
 # print(feature_selection_list)
 
 #過濾train data和test data，只剩這500個term
-dict_train_doc_filter = {}
-dict_test_doc_filter = {}
+dict_train_doc_filter = {} #key為docid,value為terms
+dict_test_doc_filter = {} #key為docid,value為terms
 for docid,terms in dict_train_doc.items(): #將train data過濾 
     filter_terms = [term for term in terms if term in feature_selection_list]  #只留下在feature selection後這500個term的字
     dict_train_doc_filter[docid] = filter_terms
@@ -156,4 +187,6 @@ for docid,terms in dict_test_doc.items(): #將test data過濾
 
 # print(dict_test_doc_filter)
 
+#分類
+trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list)
 
