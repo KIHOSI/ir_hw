@@ -45,6 +45,16 @@ def countChiSquare(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all): #�
     
     return max(chi_square_list) #回傳最高的chi-square值
 
+def countLikelihoodRatios(c_p,c_a,notc_p,notc_a,doc_all):
+    likelihood_ratios_list = []
+    likelihood_ratios_sum = 0
+    for i in range(0,13):
+        upcount = (((c_p[i]+notc_p[i])/doc_all)**c_p[i]) * ((1-((c_p[i]+notc_p[i])/doc_all))**c_a[i]) * (((c_p[i]+notc_p[i])/doc_all)**notc_p[i]) * ((1-((c_p[i]+notc_p[i])/doc_all))**notc_a[i])
+        downcount = ((c_p[i]/(c_p[i]+c_a[i]))**c_p[i]) * ((1-(c_p[i]/(c_p[i]+c_a[i])))**c_a[i]) * ((notc_p[i]/(notc_p[i]+notc_a[i]))**notc_p[i]) * ((1-(notc_p[i]/(notc_p[i]+notc_a[i])))**notc_a[i])
+        likelihood_ratios_sum = (-2) * math.log(upcount/downcount)
+        likelihood_ratios_list.append(likelihood_ratios_sum)
+    return max(likelihood_ratios_list)    
+
 def contigencyTable(term,dict_class,dict_train_doc): #計算每個term在13個class各別的chi-square，回傳13個裡面最大的值！
     #計算個chi squares需要的值（c-p,c-a,notc-p,notc-a,c-all,p-all,doc_all)
     doc_all = 195
@@ -82,10 +92,15 @@ def contigencyTable(term,dict_class,dict_train_doc): #計算每個term在13個cl
         p_all.append(c_p[i]+notc_p[i])
         a_all.append(c_a[i]+notc_a[i])
 
-    #這個算法為計算該term在全部class的4個chi square值，四個值加總，c_all,notc_all一樣，p_all,a_all不一樣
-    chi_square_sum = countChiSquare(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all)   
+    #chi-square: 計算該term在全部class的4個chi square值，四個chi-square值加總，c_all,notc_all一樣，p_all,a_all不一樣
+    #得到這個term在13個class中最大的chi-square值
+    # chi_square_sum = countChiSquare(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all)   
 
-    return chi_square_sum 
+    #likelihood-ratios:計算該term在全部class的likelihood-ratios，得到最大的
+    likelihood_ratios_sum = countLikelihoodRatios(c_p,c_a,notc_p,notc_a,doc_all)
+
+    # return chi_square_sum 
+    return likelihood_ratios_sum
 
 def trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list): #Multinomail model for training phase
     Nc = 15 # 每個class有15個train doc
@@ -153,20 +168,20 @@ for classid,docid_list in dict_class.items():
 
 #feature selection
 #計算每個train doc的term的chi-square
-dict_chisquare = {} #key為term,value為chisquare值
+dict_feature_selection = {} #key為term,value為chisquare值
 for terms_list in dict_train_doc.values(): #key為docid,value為terms，取得每一個term
     for term in terms_list:
-        chisquare = contigencyTable(term,dict_class,dict_train_doc)
-        if(dict_chisquare.get(term)): #有重複的term,跳過
+        feature_selection = contigencyTable(term,dict_class,dict_train_doc)
+        if(dict_feature_selection.get(term)): #有重複的term,跳過
             continue
-        dict_chisquare[term] = chisquare
+        dict_feature_selection[term] = feature_selection
 
 #取前500個chi-square大的term
 feature_selection_list = []
 count = 1
-for key,value in sorted(dict_chisquare.items(), key = lambda x:x[1],reverse=True): #sorted by value(由大到小)
+for key,value in sorted(dict_feature_selection.items(), key = lambda x:x[1],reverse=True): #sorted by value(由大到小)
     # print("%s %s\n" % (key,value))
-    if(count > 450):
+    if(count > 500): #500,450,430,...
         break
     feature_selection_list.append(key)
     count += 1    
@@ -191,7 +206,8 @@ for docid,terms in sorted(dict_test_doc_filter.items()):
     dict_answer[int(docid)] = int(doc_class)
 
 #將答案寫入成csv檔案
-with open('answer.csv','w',newline='') as csvfile:
+# with open('answer_chisquare.csv','w',newline='') as csvfile:
+with open('answer_likelihoodratios.csv','w',newline='') as csvfile:
     #建立csv檔寫入器
     writer = csv.writer(csvfile)
 
