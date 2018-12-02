@@ -37,15 +37,12 @@ def countChiSquare(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all): #�
         list_c = [c_all,c_all,notc_all,notc_all]
         list_observed = [c_p[i],c_a[i],notc_p[i],notc_a[i]]
         for j in range(0,4): #四個chi-square加總
-            # for k in range(0,2):
             observed_frequency = list_observed[j]
             expected_count = doc_all*(list_p[j]/doc_all)*(list_c[j]/doc_all)
             chi_square = ((observed_frequency- expected_count)**2)/expected_count
             chi_square_sum += chi_square
         chi_square_list.append(chi_square_sum)        
     
-    # print(chi_square_list)
-
     return max(chi_square_list) #回傳最高的chi-square值
 
 def contigencyTable(term,dict_class,dict_train_doc): #計算每個term在13個class各別的chi-square，回傳13個裡面最大的值！
@@ -63,14 +60,11 @@ def contigencyTable(term,dict_class,dict_train_doc): #計算每個term在13個cl
                 count_df += 1
         c_p.append(count_df)  #這個term在這個class的df值
 
-    # p_all = 0 #[all present]
     c_a = [] #[class-absent]
     notc_p = [] #[not class-present]
     notc_a = [] #[not class-absent]
-    # a_all = 0 #[absent-all]
 
     for i in range(0,13): #第幾個class
-        # p_all += c_p[i] #得p_all
         c_a.append(15-c_p[i]) #c_all
 
         count_notc_p = 0 #計算各個class中not c-present的值
@@ -80,7 +74,6 @@ def contigencyTable(term,dict_class,dict_train_doc): #計算每個term在13個cl
             count_notc_p += c_p[j]
         notc_p.append(count_notc_p)
         notc_a.append(notc_all - notc_p[i])
-    # a_all += doc_all - p_all
 
     #計算各別class的p_all,a_all
     p_all = []
@@ -89,18 +82,12 @@ def contigencyTable(term,dict_class,dict_train_doc): #計算每個term在13個cl
         p_all.append(c_p[i]+notc_p[i])
         a_all.append(c_a[i]+notc_a[i])
 
-    #這個算法為計算該term在全部class的4個chi square值，加總！（就算個別算，值也一樣）
-    #因為四個值會加總，最終p_all,c_all,a_all,notc_all都一樣
-    # list_p = [p_all,a_all]
-    # list_c = [c_all,notc_all]
+    #這個算法為計算該term在全部class的4個chi square值，四個值加總，c_all,notc_all一樣，p_all,a_all不一樣
     chi_square_sum = countChiSquare(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all)   
-    # print(chi_square_sum)
 
     return chi_square_sum 
 
 def trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list): #Multinomail model for training phase
-    # test[1][1] = 1
-
     Nc = 15 # 每個class有15個train doc
     N = 195 # 13個class，有13*15 = 195個train doc
     prior_c = [] #儲存每個class的P(c)
@@ -119,30 +106,11 @@ def trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list):
             text_c += len(dict_train_doc_filter[docid]) #計算這個class總terms數
             #計算每個term in V(feature selection的500個terms)在這個class中所有doc裡出現幾次
             for term in dict_train_doc_filter[docid]:
-                # if (dict_text_term.get(term)):
                 dict_text_term[term] += 1
-                # else:
-                #     dict_text_term[term] = 1    
-
-            # for term in feature_selection_list:
-                # dict_train_doc_filter[docid].count(term)
-        
-        #建condprob[t][c]
-        # condprob = [][]
-        # condprob = np.zeros((len(feature_selection_list),len(dict_class.keys())))
-        
-        # print(dict_text_term)
 
         for term,frequency in dict_text_term.items():
             condprob[term][classid] = (frequency+1)/(text_c+len(dict_text_term.keys())) # add one smoothing，M為feature selection的總terms數(500)
-            # print(condprob['distress'])
-            # condprob.setdefault(term,{})[classid] = (text_term+1)/(text_c+len(feature_selection_list)) # add one smoothing，M為feature selection的總terms數(500)  
-
-    # print(feature_selection_list)  
-    # print(condprob)
-    # print(prior_c)  
-    # print(condprob['distress'])
-
+          
     return condprob,prior_c
 
 def ApplyMultinomialNB(dict_class,test_data,condprob,prior_c): # multinomial model in testing phase
@@ -152,12 +120,8 @@ def ApplyMultinomialNB(dict_class,test_data,condprob,prior_c): # multinomial mod
     for classid,docid_list in dict_class.items():
         score.insert(int(classid),math.log(prior_c[int(classid)]))
         for term in test_data: #該test doc的term，在這個class的分數加總，就是這個doc屬於這個class的分數
-            # print("term:"+term+"\n")
-            # if(condprob[term].get(classid)): #如果該term有在這個class，再加分（不是每個class都有這個term)
             score[int(classid)] += math.log(condprob[term][classid])
     del score[0] #刪除為0的（index恢復到從0開始）
-    # print(score)
-    # print(score.index(max(score))+1) 
     return score.index(max(score))+1 #最大的值，代表這個class (index為0開始，所以要加一)
 
 
@@ -170,7 +134,6 @@ for i in range(1,1096): #將1095個doc做tokenize
 dict_class = {} # key為classid,value為docid_list
 with open('training.txt','r') as f:
     for line in f:
-        #print(line.split(' ',1))
         (classID,docID_list) = line.split(' ',1)
         docID_set = docID_list.split() #去除docid中最後面\n    
         dict_class[classID] = docID_set
@@ -184,23 +147,15 @@ for key,value in dict_class.items(): # key為classid,value為docid_list
 
 #去除train doc，剩下1095-195=900個test doc
 dict_test_doc = dict_doc.copy() #複製1095個doc
-# print(len(dict_test_doc))
 for classid,docid_list in dict_class.items():
     for docid in docid_list:
         del dict_test_doc[docid] #刪除在train data的doc，留下來都當test data
-        # for docid,terms in dict_doc.items():
-        #     if not(docid == docid2):
-        #         dict_test_doc[docid] = terms
-# print(len(dict_test_doc.keys()))
 
 #feature selection
 #計算每個train doc的term的chi-square
 dict_chisquare = {} #key為term,value為chisquare值
-# print(chiSquare("navi",dict_class,dict_train_doc))
-# print(dict_train_doc[str(11)])
 for terms_list in dict_train_doc.values(): #key為docid,value為terms，取得每一個term
     for term in terms_list:
-        # print(term)
         chisquare = contigencyTable(term,dict_class,dict_train_doc)
         if(dict_chisquare.get(term)): #有重複的term,跳過
             continue
@@ -211,13 +166,10 @@ feature_selection_list = []
 count = 1
 for key,value in sorted(dict_chisquare.items(), key = lambda x:x[1],reverse=True): #sorted by value(由大到小)
     # print("%s %s\n" % (key,value))
-    if(count > 500):
+    if(count > 450):
         break
     feature_selection_list.append(key)
     count += 1    
-
-# print(len(feature_selection_list))
-# print(feature_selection_list)
 
 #過濾train data和test data，只剩這500個term
 dict_train_doc_filter = {} #key為docid,value為terms
@@ -230,18 +182,13 @@ for docid,terms in dict_test_doc.items(): #將test data過濾
     filter_terms = [term for term in terms if term in feature_selection_list]  #只留下在feature selection後這500個term的字
     dict_test_doc_filter[docid] = filter_terms
 
-# print(dict_train_doc_filter)
-# print(dict_test_doc_filter)
-
 #分類
 condprob,prior_c = trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list) #train data
 #test data，算出每一個doc屬於哪一個class
 dict_answer = {}
-# dict_answer[1] = ApplyMultinomialNB(dict_class,["distress","lesli"],condprob,prior_c)
 for docid,terms in sorted(dict_test_doc_filter.items()):
     doc_class = ApplyMultinomialNB(dict_class,terms,condprob,prior_c) #得到該doc屬於哪個class
     dict_answer[int(docid)] = int(doc_class)
-# print(dict_answer)
 
 #將答案寫入成csv檔案
 with open('answer.csv','w',newline='') as csvfile:
