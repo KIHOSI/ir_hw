@@ -45,7 +45,7 @@ def countChiSquare(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all): #�
     
     return max(chi_square_list) #回傳最高的chi-square值
 
-def countLikelihoodRatios(c_p,c_a,notc_p,notc_a,doc_all):
+def countLikelihoodRatios(c_p,c_a,notc_p,notc_a,doc_all): #計算likelihood ratios
     likelihood_ratios_list = []
     likelihood_ratios_sum = 0
     for i in range(0,13):
@@ -54,6 +54,27 @@ def countLikelihoodRatios(c_p,c_a,notc_p,notc_a,doc_all):
         likelihood_ratios_sum = (-2) * math.log(upcount/downcount)
         likelihood_ratios_list.append(likelihood_ratios_sum)
     return max(likelihood_ratios_list)    
+
+def countExpectedMutualInformation(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all): #計算EMI總和
+    expected_mutual_information_list = []
+    expected_mutual_information_sum = 0
+    for i in range(0,13):
+        list_p = [p_all[i],a_all[i],p_all[i],a_all[i]]
+        list_c = [c_all,c_all,notc_all,notc_all]
+        list_observed = [c_p[i],c_a[i],notc_p[i],notc_a[i]]
+        for j in range(0,4):
+            # print("j:"+str(j)+"\n")
+            upcount = list_observed[j]/doc_all
+            # print("upcount:"+str(upcount)+"\n")
+            downcount = (list_p[j]/doc_all) * (list_c[j]/doc_all)
+            # print("downcount:"+ str(downcount)+"\n")
+            if(upcount == 0) : #不知為何有list_observed(c_p)為0的情況，會導致log0情況，所以直接加0
+                expected_mutual_information_sum += 0
+            else:
+                expected_mutual_information_sum += (list_observed[j]/doc_all) * math.log( upcount / downcount )
+        expected_mutual_information_list.append(expected_mutual_information_sum)
+
+    return max(expected_mutual_information_list)
 
 def contigencyTable(term,dict_class,dict_train_doc): #計算每個term在13個class各別的chi-square，回傳13個裡面最大的值！
     #計算個chi squares需要的值（c-p,c-a,notc-p,notc-a,c-all,p-all,doc_all)
@@ -97,10 +118,14 @@ def contigencyTable(term,dict_class,dict_train_doc): #計算每個term在13個cl
     # chi_square_sum = countChiSquare(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all)   
 
     #likelihood-ratios:計算該term在全部class的likelihood-ratios，得到最大的
-    likelihood_ratios_sum = countLikelihoodRatios(c_p,c_a,notc_p,notc_a,doc_all)
+    # likelihood_ratios_sum = countLikelihoodRatios(c_p,c_a,notc_p,notc_a,doc_all)
+
+    #expected-mutual-information(EMI):計算該term在全部class的4個EMI值，加總後回傳在13個class中最大的EMI值
+    expected_mutual_information_sum = countExpectedMutualInformation(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all)
 
     # return chi_square_sum 
-    return likelihood_ratios_sum
+    # return likelihood_ratios_sum
+    return expected_mutual_information_sum
 
 def trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list): #Multinomail model for training phase
     Nc = 15 # 每個class有15個train doc
@@ -207,7 +232,8 @@ for docid,terms in sorted(dict_test_doc_filter.items()):
 
 #將答案寫入成csv檔案
 # with open('answer_chisquare.csv','w',newline='') as csvfile:
-with open('answer_likelihoodratios.csv','w',newline='') as csvfile:
+# with open('answer_likelihoodratios.csv','w',newline='') as csvfile:
+with open('answer_expectedmutualinformation.csv','w',newline='') as csvfile: 
     #建立csv檔寫入器
     writer = csv.writer(csvfile)
 
