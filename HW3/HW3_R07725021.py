@@ -110,19 +110,31 @@ def trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list):
     for classid,docid_list in dict_class.items():
         prior_c.insert(int(classid),(Nc/N)) #P(c) = Nc / N
         text_c = 0 #該class所有terms數(textc)
-        text_term = 0 #每個term在該class的doc中總共出現幾次(Tct)
+        # text_term = 0 #每個term在該class的doc中總共出現幾次(Tct)
+        dict_text_term = {}
+        for term in feature_selection_list: #初始化
+            dict_text_term[term] = 0
+
         for docid in docid_list: #取得每個class的docid list，得每一個doc
             text_c += len(dict_train_doc_filter[docid]) #計算這個class總terms數
             #計算每個term in V(feature selection的500個terms)在這個class中所有doc裡出現幾次
-            for term in feature_selection_list:
-                dict_train_doc_filter[docid].count(term)
+            for term in dict_train_doc_filter[docid]:
+                # if (dict_text_term.get(term)):
+                dict_text_term[term] += 1
+                # else:
+                #     dict_text_term[term] = 1    
+
+            # for term in feature_selection_list:
+                # dict_train_doc_filter[docid].count(term)
         
         #建condprob[t][c]
         # condprob = [][]
         # condprob = np.zeros((len(feature_selection_list),len(dict_class.keys())))
         
-        for term in feature_selection_list:
-            condprob[term][classid] = (text_term+1)/(text_c+len(feature_selection_list)) # add one smoothing，M為feature selection的總terms數(500)
+        # print(dict_text_term)
+
+        for term,frequency in dict_text_term.items():
+            condprob[term][classid] = (frequency+1)/(text_c+len(dict_text_term.keys())) # add one smoothing，M為feature selection的總terms數(500)
             # print(condprob['distress'])
             # condprob.setdefault(term,{})[classid] = (text_term+1)/(text_c+len(feature_selection_list)) # add one smoothing，M為feature selection的總terms數(500)  
 
@@ -141,6 +153,7 @@ def ApplyMultinomialNB(dict_class,test_data,condprob,prior_c): # multinomial mod
         score.insert(int(classid),math.log(prior_c[int(classid)]))
         for term in test_data: #該test doc的term，在這個class的分數加總，就是這個doc屬於這個class的分數
             # print("term:"+term+"\n")
+            # if(condprob[term].get(classid)): #如果該term有在這個class，再加分（不是每個class都有這個term)
             score[int(classid)] += math.log(condprob[term][classid])
     del score[0] #刪除為0的（index恢復到從0開始）
     # print(score)
@@ -203,7 +216,7 @@ for key,value in sorted(dict_chisquare.items(), key = lambda x:x[1],reverse=True
     feature_selection_list.append(key)
     count += 1    
 
-print(len(feature_selection_list))
+# print(len(feature_selection_list))
 # print(feature_selection_list)
 
 #過濾train data和test data，只剩這500個term
@@ -217,7 +230,7 @@ for docid,terms in dict_test_doc.items(): #將test data過濾
     filter_terms = [term for term in terms if term in feature_selection_list]  #只留下在feature selection後這500個term的字
     dict_test_doc_filter[docid] = filter_terms
 
-print(dict_train_doc_filter)
+# print(dict_train_doc_filter)
 # print(dict_test_doc_filter)
 
 #分類
@@ -236,10 +249,10 @@ with open('answer.csv','w',newline='') as csvfile:
     writer = csv.writer(csvfile)
 
     #第一行：id,Value
-    writer.writerow(['id','Value'])
+    writer.writerow(['Id','Value'])
     #第二行開始輸入答案，格式為docid,classid
     for docid,classid in sorted(dict_answer.items()):
-        writer.writerow([docid,classid])
+        writer.writerow([str(docid),str(classid)])
 
 
 
