@@ -118,14 +118,14 @@ def contigencyTable(term,dict_class,dict_train_doc): #計算每個term在13個cl
     # chi_square_sum = countChiSquare(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all)   
 
     #likelihood-ratios:計算該term在全部class的likelihood-ratios，得到最大的
-    # likelihood_ratios_sum = countLikelihoodRatios(c_p,c_a,notc_p,notc_a,doc_all)
+    likelihood_ratios_sum = countLikelihoodRatios(c_p,c_a,notc_p,notc_a,doc_all)
 
     #expected-mutual-information(EMI):計算該term在全部class的4個EMI值，加總後回傳在13個class中最大的EMI值
-    expected_mutual_information_sum = countExpectedMutualInformation(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all)
+    # expected_mutual_information_sum = countExpectedMutualInformation(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_all,doc_all)
 
     # return chi_square_sum 
-    # return likelihood_ratios_sum
-    return expected_mutual_information_sum
+    return likelihood_ratios_sum
+    # return expected_mutual_information_sum
 
 def trainMultinomialNB(dict_class,dict_train_doc_filter,feature_selection_list): #Multinomail model for training phase
     Nc = 15 # 每個class有15個train doc
@@ -206,7 +206,7 @@ feature_selection_list = []
 count = 1
 for key,value in sorted(dict_feature_selection.items(), key = lambda x:x[1],reverse=True): #sorted by value(由大到小)
     # print("%s %s\n" % (key,value))
-    if(count > 500): #500,450,430,...
+    if(count > 400): #500,450,430,400,350;目前400跑出來最好
         break
     feature_selection_list.append(key)
     count += 1    
@@ -232,8 +232,8 @@ for docid,terms in sorted(dict_test_doc_filter.items()):
 
 #將答案寫入成csv檔案
 # with open('answer_chisquare.csv','w',newline='') as csvfile:
-# with open('answer_likelihoodratios.csv','w',newline='') as csvfile:
-with open('answer_expectedmutualinformation.csv','w',newline='') as csvfile: 
+with open('answer_likelihoodratios.csv','w',newline='') as csvfile:
+# with open('answer_expectedmutualinformation.csv','w',newline='') as csvfile: 
     #建立csv檔寫入器
     writer = csv.writer(csvfile)
 
