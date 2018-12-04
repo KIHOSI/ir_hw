@@ -206,7 +206,7 @@ feature_selection_list = []
 count = 1
 for key,value in sorted(dict_feature_selection.items(), key = lambda x:x[1],reverse=True): #sorted by value(由大到小)
     # print("%s %s\n" % (key,value))
-    if(count > 400): #500,450,430,400,350;目前400跑出來最好
+    if(count > 300): #500,450,430,400,350,300;目前300跑出來最好
         break
     feature_selection_list.append(key)
     count += 1    
