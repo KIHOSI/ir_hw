@@ -1,6 +1,5 @@
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
-# import numpy as np
 from collections import defaultdict
 import math
 import csv
@@ -76,7 +75,7 @@ def countExpectedMutualInformation(c_p,c_a,notc_p,notc_a,c_all,notc_all,p_all,a_
 
     return max(expected_mutual_information_list)
 
-def contigencyTable(term,dict_class,dict_train_doc): #計算每個term在13個class各別的chi-square，回傳13個裡面最大的值！
+def contingencyTable(term,dict_class,dict_train_doc): #計算每個term在13個class各別的chi-square，回傳13個裡面最大的值！
     #計算個chi squares需要的值（c-p,c-a,notc-p,notc-a,c-all,p-all,doc_all)
     doc_all = 195
     c_all = 15
@@ -192,11 +191,11 @@ for classid,docid_list in dict_class.items():
         del dict_test_doc[docid] #刪除在train data的doc，留下來都當test data
 
 #feature selection
-#計算每個train doc的term的chi-square
-dict_feature_selection = {} #key為term,value為chisquare值
+#計算每個train doc的term的feature selection(chi-square, likelihood ratios, EMI)
+dict_feature_selection = {} #key為term,value為feature selection值
 for terms_list in dict_train_doc.values(): #key為docid,value為terms，取得每一個term
     for term in terms_list:
-        feature_selection = contigencyTable(term,dict_class,dict_train_doc)
+        feature_selection = contingencyTable(term,dict_class,dict_train_doc)
         if(dict_feature_selection.get(term)): #有重複的term,跳過
             continue
         dict_feature_selection[term] = feature_selection
@@ -206,7 +205,7 @@ feature_selection_list = []
 count = 1
 for key,value in sorted(dict_feature_selection.items(), key = lambda x:x[1],reverse=True): #sorted by value(由大到小)
     # print("%s %s\n" % (key,value))
-    if(count > 150): #500,450,430,400,350,300,200,150,100;目前150跑出來最好
+    if(count > 150): #500,450,430,400,350,300,200,150,125,122,121,120,100;目前150跑出來最好(121開始降低)
         break
     feature_selection_list.append(key)
     count += 1    
