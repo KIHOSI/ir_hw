@@ -103,10 +103,14 @@ class CountSimilarity():
                 count += float(tf_idf_1*tf_idf_2) #兩者相乘，加起來
         return count #回傳結果        
 
-    def countSimilarity(self,doc1,doc2):    #計算cosine similarity
+    def countCosineSimilarity(self,doc1,doc2):    #計算cosine similarity
         # doc1 = input("要比較哪兩個文章的cosine similarity(1):")
         # doc2 = input("要比較哪兩個文章的cosine similarity(2):")
         dict_1 = dict_tf_idf[int(doc1)] #key為term,value為tf-idf
         dict_2 = dict_tf_idf[int(doc2)] #key為term,value為tf-idf
         answer = self.cosineSimilarity(dict_tf_idf,dict_1,dict_2)
-        print("doc"+str(doc1)+"與doc"+str(doc2)+"的cosine similarity為: "+str(answer)+" !!!")
+        return answer
+        # print("doc"+str(doc1)+"與doc"+str(doc2)+"的cosine similarity為: "+str(answer)+" !!!")
+
+    def getTFIDFDict(self):
+        return dict_tf_idf
