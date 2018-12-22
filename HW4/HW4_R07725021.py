@@ -10,18 +10,26 @@ def simpleHAC():
     #得N*N matrix，計算任兩文章的similarity
     for i in range(1,1096):
         for j in range(1,1096):
+            if(i == j): #避免self-similarity
+                continue 
             clusterSimilarity[i][j] = cosineSimilarity.countCosineSimilarity(i,j)
 
     #merge，把每個doc都先看成一個點，任兩點的cosine similarity就是他們之間的距離，先跟據哪兩個點距離最小(sim最大)來合併變一群
     #距離 = 1-cosineSimilarity，所以cosine similarity大，距離短
     #合併過後，single linkage是看[i][j]和[m][j]哪個比較短(sim比較大)
     #complete linkage則是看[i][j]和[m][j]哪個比較長(sim比較小)
-    for k in range(1,2): # k = 5，9群;
-        for i in range(1,1096):
+    for k in range(1,2): # merge次數，每次都是兩兩merge
+        # for i in range(1,1096):
             # print("i1:"+str(i)+"\n\n")
             # print(sorted(clusterSimilarity[i].items(),key = lambda x:x[1],reverse=True))
-            for m,similarity in sorted(clusterSimilarity[i].items(),key = lambda x:x[1],reverse=True): #排序，比較similarity(value)，由大到小，取最大的
-            # print("i2:"+str(i)+"\n\n")
+            # for m,similarity in sorted(clusterSimilarity[i].items(),key = lambda x:x[1],reverse=True): #排序，比較similarity(value)，由大到小，取最大的
+            #取得i,m,similarity，比較similarity，拿sim最大的i和m來做merge
+
+            # for in sorted(for m_similarity in clusterSimilarity.values())            
+            #每個cluster中
+            for i ,m_similarity in clusterSimilarity.items():
+                for m,similarity in sorted(m_similarity.items(),key = lambda x:x[1],reverse=True):
+              
                 if((i != m) and (existCluster[i] == 1) and (existCluster[m] == 1)): #i不等於j，且i和j文章都還活著
                     # print("i3:"+str(i)+"\n\n")
                     #取得跟i比，similarity最大的m
@@ -66,20 +74,6 @@ def simpleHAC():
 
     return clusterDict
 
-                # break
-        # break
-                #看i比較大還是j比較大
-                # if(i > j): #i比較大，與j對調
-                #     num = i
-                #     i = j
-                #     j = num
-                # clusterArray.append([i,j])
-                #更新cosine similarity
-
-# def completeLinkage(clusters,):
-
-
-
 
 global cosineSimilarity
 cosineSimilarity = CountSimilarity() #引用CountSimilarity.py class
@@ -87,7 +81,7 @@ cosineSimilarity.main() #初始化，先算出tf-idf值
 # dict_tf_idf = cosineSimilarity.getTFIDFDict()
 answer = simpleHAC()
 print("dict keys num:"+str(len(answer.keys()))+"\n")
-print("dict values num:"+str(len(answer.values()))+"\n")
+# print("dict values num:"+str(len(answer.values()))+"\n")
 print(answer)
 with open('answer.txt','w') as f:
     for cluster_boss,cluster_subs in answer.items():
