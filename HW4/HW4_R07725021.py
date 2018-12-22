@@ -1,11 +1,15 @@
 from CountSimilarity import CountSimilarity #import CountSimilarity.py
 from collections import defaultdict
 import numpy as np
+# import pandas as pd
 
 def simpleHAC():
-    clusterSimilarity = defaultdict(dict) #儲存任兩個文章的cosine similarity
+    clusterSimilarity = np.zeros(shape=(1096,1096)) #浪費空間，index比較好看
     existCluster = np.ones(1096) #每個cluster是否還存活著，1存在、0不存在，預設都存在
     clusterDict = defaultdict(list) #存現在merge的文章們(dict型態，key為cluster的頭，value是list)
+    for num in range(1,1096): #initial,key和value都是docid
+        clusterDict[num].append(num)
+    
 
     #得N*N matrix，計算任兩文章的similarity
     for i in range(1,1096):
@@ -18,75 +22,53 @@ def simpleHAC():
     #距離 = 1-cosineSimilarity，所以cosine similarity大，距離短
     #合併過後，single linkage是看[i][j]和[m][j]哪個比較短(sim比較大)
     #complete linkage則是看[i][j]和[m][j]哪個比較長(sim比較小)
-    for k in range(1,2): # merge次數，每次都是兩兩merge
-        # for i in range(1,1096):
-            # print("i1:"+str(i)+"\n\n")
-            # print(sorted(clusterSimilarity[i].items(),key = lambda x:x[1],reverse=True))
-            # for m,similarity in sorted(clusterSimilarity[i].items(),key = lambda x:x[1],reverse=True): #排序，比較similarity(value)，由大到小，取最大的
-            #取得i,m,similarity，比較similarity，拿sim最大的i和m來做merge
-
-            # for in sorted(for m_similarity in clusterSimilarity.values())            
-            #每個cluster中
-            for i ,m_similarity in clusterSimilarity.items():
-                for m,similarity in sorted(m_similarity.items(),key = lambda x:x[1],reverse=True):
-              
-                if((i != m) and (existCluster[i] == 1) and (existCluster[m] == 1)): #i不等於j，且i和j文章都還活著
-                    # print("i3:"+str(i)+"\n\n")
-                    #取得跟i比，similarity最大的m
-                    # print("m:"+str(m)+" ,similarity:"+str(similarity)+"\n")
+    for k in range(1,1095): # merge次數，每次都是兩兩merge
+        if(len(clusterDict.keys())<=targetCluster): #決定要幾群
+            break
+        #取得i,m,similarity，比較similarity，拿sim最大的i和m來做merge
+        max_list = np.dstack(np.unravel_index(np.argsort(-clusterSimilarity.ravel()), (1096, 1096)))#回傳array裡sim由大到小的index值，e.g. [563,594],[594,595],...
+        for num in max_list[0]:#取得i,m    
+            i = num[0]
+            m = num[1]
+            if((i != m) and (existCluster[i] == 1) and (existCluster[m] == 1)): #i不等於j，且i和j文章都還活著
+            #取得跟i比，similarity最大的m
+            # print("m:"+str(m)+" ,similarity:"+str(similarity)+"\n")
                     
-                    if(i > m): #i永遠是比較小的
-                        num = i
-                        i = m
-                        m = num
-                    
-                    #把j merge到i去
-                    # if(clusterDict.get(i)): #看i是否已有列表
-                    #     if(clusterDict.get(m)):#如果m也是已有list，取得
-                    #         clusterDict[i].extend(clusterDict[m])
-                    #     else: #m只是單個值
-                    #         clusterDict[i].append(m)
-                    # else:
-                    #     if(clusterDict.get(m)):#如果m已有list，取得m的列表
-                    #         clusterDict[i] = clusterDict[m]
-                    #     else: #m只是單個值
-                    #         clusterDict[i] = m
-                    if(clusterDict.get(m)):#如果m也是已有list，取得
-                        clusterDict[i].append(m) #m本身也要加
-                        clusterDict[i].extend(clusterDict[m]) #m的底下list
-                    else: #m只是單個值
-                        clusterDict[i].append(m)
+                if(i > m): #i永遠是比較小的
+                    num = i
+                    i = m
+                    m = num
+                        
+                #把j merge到i去
+#                 if(clusterDict.get(m)):#如果m也是已有list，取得
+                # clusterDict[i].append(m) #m本身也要加
+                clusterDict[i].extend(clusterDict[m]) #m的底下list
+#                 else: #m只是單個值
+#                 clusterDict[i].append(m)
 
-                    clusterDict.pop(m, None) #如果dict裡有key為m，要刪掉(因為m已經merge到i去了)        
-                    # c_list = [i,m]
-                    # clusterList.append(c_list)
-
-                    #找sim最大的（距離最遠，complete linkage)
-                    for j in range(1,1096):
-                        # print("i5:"+str(i)+"\n")
-                        # print("j:"+str(j)+"\n")
-                        # print("m:"+str(m)+"\n")
-                        if((j!=i) and (j!=m)):
-                            clusterSimilarity[i][j] = min(clusterSimilarity[i][j],clusterSimilarity[m][j])
-                            clusterSimilarity[j][i] = min(clusterSimilarity[i][j],clusterSimilarity[m][j])
-                    existCluster[m] = 0
-                    break
+                clusterDict.pop(m, None) #如果dict裡有key為m，要刪掉(因為m已經merge到i去了)        
+                #找sim最大的（距離最遠，complete linkage)
+                for j in range(1,1096):
+                    if((j!=i) and (j!=m)):
+                        clusterSimilarity[i][j] = min(clusterSimilarity[i][j],clusterSimilarity[m][j])
+                        clusterSimilarity[j][i] = min(clusterSimilarity[i][j],clusterSimilarity[m][j])
+                existCluster[m] = 0
+                break
 
     return clusterDict
 
 
 global cosineSimilarity
+global targetCluster #目標分成幾群
+targetCluster = 8
 cosineSimilarity = CountSimilarity() #引用CountSimilarity.py class
 cosineSimilarity.main() #初始化，先算出tf-idf值
-# dict_tf_idf = cosineSimilarity.getTFIDFDict()
 answer = simpleHAC()
 print("dict keys num:"+str(len(answer.keys()))+"\n")
-# print("dict values num:"+str(len(answer.values()))+"\n")
 print(answer)
-with open('answer.txt','w') as f:
+with open(str(targetCluster)+'txt','w') as f:
     for cluster_boss,cluster_subs in answer.items():
-        f.write("%d\n" % (cluster_boss))
+        # f.write("%d\n" % (cluster_boss))
         for cluster_sub in sorted(cluster_subs):
             f.write("%d\n" % (cluster_sub))
         f.write("\n\n")
-
