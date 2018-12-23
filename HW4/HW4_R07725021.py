@@ -50,7 +50,7 @@ def simpleHAC():
 
 global cosineSimilarity
 global targetCluster #目標分成幾群
-targetCluster = 20
+targetCluster = 8
 cosineSimilarity = CountSimilarity() #引用CountSimilarity.py class
 cosineSimilarity.main() #初始化，先算出tf-idf值
 answer = simpleHAC()
