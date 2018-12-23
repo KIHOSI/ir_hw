@@ -9,15 +9,6 @@ from collections import defaultdict
 class CountSimilarity():
     global dict_tf_idf 
     dict_tf_idf = defaultdict(dict)  #key為docid,value為term和sqrt_tfidf (dict中dict)
-    # def __init__(self): #init會在呼叫其他method時會自動做
-        # dict_df_all,dict_tf_each_doc = self.tokenize() #dict_tf_all:得到1095個doc所有term的tf。dict_tf_each_now:得每個一doc中各別的term和tf
-        # for i in range(1,1096): #計算tf-idf
-        #     vectorLength = self.countDocVectorLength(dict_tf_each_doc[i]) #計算每一個doc的vectorlength
-        #     for term,tf in dict_tf_each_doc[i].items():
-        #         tf_idf = self.findIDF(dict_df_all,term,tf) #count tf-idf
-        #         sqrt_tfidf = float(tf_idf/vectorLength) #get tf-idf unit vector
-        #         dict_tf_idf[i][term] = sqrt_tfidf
-        # self.countSimilarity(dict_tf_idf)
 
     def main(self): #主要運作流程，計算出tf-idf
         dict_df_all,dict_tf_each_doc = self.tokenize() #dict_tf_all:得到1095個doc所有term的tf。dict_tf_each_now:得每個一doc中各別的term和tf
@@ -104,13 +95,7 @@ class CountSimilarity():
         return count #回傳結果        
 
     def countCosineSimilarity(self,doc1,doc2):    #計算cosine similarity
-        # doc1 = input("要比較哪兩個文章的cosine similarity(1):")
-        # doc2 = input("要比較哪兩個文章的cosine similarity(2):")
         dict_1 = dict_tf_idf[int(doc1)] #key為term,value為tf-idf
         dict_2 = dict_tf_idf[int(doc2)] #key為term,value為tf-idf
         answer = self.cosineSimilarity(dict_tf_idf,dict_1,dict_2)
         return answer
-        # print("doc"+str(doc1)+"與doc"+str(doc2)+"的cosine similarity為: "+str(answer)+" !!!")
-
-    def getTFIDFDict(self):
-        return dict_tf_idf
